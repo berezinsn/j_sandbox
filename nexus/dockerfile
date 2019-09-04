@@ -1,0 +1,4 @@
+FROM   sonatype/nexus3
+VOLUME ./data /nexus-data
+EXPOSE 8443 18000 50000
+

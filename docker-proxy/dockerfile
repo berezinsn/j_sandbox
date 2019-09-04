@@ -1,0 +1,12 @@
+FROM centos:centos7
+
+RUN yum -y install socat && yum clean all
+
+# mounting the host docker.sock into the container
+VOLUME /var/run/docker.sock
+
+# docker tcp port such'll be exposed inside the docker-network
+EXPOSE 2375
+
+# bridging between two byte streams 
+ENTRYPOINT ["socat", "TCP-LISTEN:2375,reuseaddr,fork","UNIX-CLIENT:/var/run/docker.sock"]

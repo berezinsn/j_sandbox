@@ -1,0 +1,37 @@
+FROM centos:7
+
+ENV SUPERVISOR_VERSION 3.3.1
+
+# Dependencies
+RUN yum update -y
+RUN set -x  && \
+    yum install -y \
+        cronie-anacron \
+        git \
+        bc \
+        haproxy \
+        python-setuptools \
+        curl && \
+    curl -sOL https://github.com/Supervisor/supervisor/archive/${SUPERVISOR_VERSION}.tar.gz \
+        && tar -xvf ${SUPERVISOR_VERSION}.tar.gz \
+        && cd supervisor-${SUPERVISOR_VERSION} && python setup.py install
+
+COPY ./cfg/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+# Install
+RUN git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt && cd /opt/letsencrypt
+
+RUN chmod a+x /opt/letsencrypt/certbot-auto
+RUN /opt/letsencrypt/certbot-auto --os-packages-only --noninteractive
+
+ADD renew-certificate.sh /usr/local/sbin/renew-certificate.sh
+RUN chmod +x /usr/local/sbin/renew-certificate.sh
+ADD supervisord.conf /etc/supervisord.conf
+
+# Crontab
+ADD crontab /etc/cron.d/renew-certificate-cron
+RUN chmod 0644 /etc/cron.d/renew-certificate-cron
+
+EXPOSE 443
+EXPOSE 80
+
+CMD ["sh", "-c", "echo \"export DOMAINS='$DOMAINS'; export EMAILS='$EMAIL';\" > /tmp/.docker.env && INITIAL_RENEWAL=true /usr/local/sbin/renew-certificate.sh && supervisord"]

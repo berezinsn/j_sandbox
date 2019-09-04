@@ -1,0 +1,1 @@
+0 0 */2 * * root . /tmp/.docker.env; /usr/local/sbin/renew-certificate.sh >> /var/log/renew-certificate.log

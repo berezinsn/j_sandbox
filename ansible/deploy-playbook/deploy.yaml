@@ -1,0 +1,32 @@
+---
+- name: Deploy a containerized app into production
+  hosts: all
+  become: yes
+
+  tasks:
+
+  - name:  Detection of OS
+    debug: var=ansible_os_family
+
+  - name:  Check if docker installed
+    shell: docker -v
+    register: docker_exists
+    ignore_errors: yes
+
+  - block: 
+    - name: Installing docker-engine
+      shell: echo "ok"
+      register: docker_installed
+
+    - debug:
+        msg: "{{ docker_installed }}"
+
+    when: ansible_os_family == "RedHat" and docker_exists.rc != 0
+
+#  - name:  Installing docker-engine
+
+#  - name:  Downloading new image from registry
+
+#  - name:  Rolling update:
+  
+  

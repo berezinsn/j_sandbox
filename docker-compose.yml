@@ -1,0 +1,57 @@
+version: '3.1'
+services:
+  haproxy:
+    build: ./haproxy
+    environment:
+    # Comma separated list of domains. The root domain must be the first entry.
+      DOMAINS: ci-cd.ru, nexus.ci-cd.ru, registry.ci-cd.ru, jenkins.ci-cd.ru
+      EMAIL: ya.steel@yandex.ru
+    depends_on: 
+      - master
+      - nexus
+    networks:
+      - jnet
+    ports:
+      - "80:80"
+      - "443:443"
+      - "16000:16000"
+  master:
+    build:
+      context: ./master
+    volumes:
+      - ./master/log:/var/log/jenkins
+      - ./master/data:/var/jenkins_home
+    secrets:
+      - juser
+      - jpass
+    networks:
+      - jnet
+  slave:
+    build: ./slave-image
+#  ansible:
+#    build: ./ansible/ansible-image
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+  proxy:
+    build: ./docker-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      jnet:
+        aliases:
+          - proxy
+  nexus:
+    build: 
+      context: ./nexus
+    volumes:
+      - ./nexus/data:/nexus-data
+    networks:
+      - jnet
+networks: 
+  jnet:
+
+secrets:
+  juser:
+    file: ./master/data/juser
+  jpass:
+    file: ./master/data/jpass
