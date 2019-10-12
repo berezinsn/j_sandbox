@@ -10,6 +10,7 @@ if [[ ! -d "./master/log" ]]; then
 fi
 if [[ ! -d "./nexus/data" ]]; then
     mkdir "./nexus/data"
+fi    
 #read -p "Provide URL where the seed job placed: " SEED_JOBS_URL
 rm -rf ./master/data/* ./master/log/* ./nexus/data/*
 echo $juser > ./master/data/juser && echo $jpass > ./master/data/jpass
